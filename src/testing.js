@@ -1,40 +1,56 @@
-import React from "react";
-import "./App.css";
+/* global React, ReactDOM */
+/* eslint-disable react/prop-types, react/no-multi-comp,
+ no-eval, no-nested-ternary */
 
+// eslint-disable-next-line no-unused-vars
+
+// To see a more advanced version of this app with features such as toggle sign
+// and Clear Entry buttons, see this pen
+// https://codepen.io/no_stack_dub_sack/full/jrxpKP/
+
+// coded by @no-stack-dub-sack (github) / @no_stack_sub_sack (codepen)
+
+// VARS:
 const isOperator = /[x/+‑]/,
   endsWithOperator = /[x+‑/]$/,
-  endsWithNegativeSign = /\d[x/+‑]{1}‑$/;
-/* eslint no-eval: 0 */
+  endsWithNegativeSign = /\d[x/+‑]{1}‑$/,
+  clearStyle = { background: "#ac3939" },
+  operatorStyle = { background: "#666666" },
+  equalsStyle = {
+    background: "#004466",
+    position: "absolute",
+    height: 130,
+    bottom: 5,
+  };
 
-class App extends React.Component {
+// COMPONENTS:
+class Calculator extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentVal: "0",
-      previousVal: "0",
-      formula: "",
-      currentSign: "pos",
-      lastClicked: "",
-    };
-    this.initialize = this.initialize.bind(this);
-    this.handleDecimal = this.handleDecimal.bind(this);
-    this.handleNumbers = this.handleNumbers.bind(this);
-    this.handleOperators = this.handleOperators.bind(this);
-    this.handleEvaluate = this.handleEvaluate.bind(this);
-  }
-
-  initialize = () => {
-    this.setState({
       currentVal: "0",
       prevVal: "0",
       formula: "",
       currentSign: "pos",
       lastClicked: "",
-      evaluated: false,
-    });
-  };
+    };
+    this.maxDigitWarning = this.maxDigitWarning.bind(this);
+    this.handleOperators = this.handleOperators.bind(this);
+    this.handleEvaluate = this.handleEvaluate.bind(this);
+    this.initialize = this.initialize.bind(this);
+    this.handleDecimal = this.handleDecimal.bind(this);
+    this.handleNumbers = this.handleNumbers.bind(this);
+  }
 
-  handleEvaluate = () => {
+  maxDigitWarning() {
+    this.setState({
+      currentVal: "Digit Limit Met",
+      prevVal: this.state.currentVal,
+    });
+    setTimeout(() => this.setState({ currentVal: this.state.prevVal }), 1000);
+  }
+
+  handleEvaluate() {
     if (!this.state.currentVal.includes("Limit")) {
       let expression = this.state.formula;
       while (endsWithOperator.test(expression)) {
@@ -60,9 +76,9 @@ class App extends React.Component {
         evaluated: true,
       });
     }
-  };
+  }
 
-  handleOperators = (e) => {
+  handleOperators(e) {
     if (!this.state.currentVal.includes("Limit")) {
       const value = e.target.value;
       const { formula, prevVal, evaluated } = this.state;
@@ -86,9 +102,9 @@ class App extends React.Component {
         });
       }
     }
-  };
+  }
 
-  handleNumbers = (e) => {
+  handleNumbers(e) {
     if (!this.state.currentVal.includes("Limit")) {
       const { currentVal, formula, evaluated } = this.state;
       const value = e.target.value;
@@ -117,9 +133,9 @@ class App extends React.Component {
         });
       }
     }
-  };
+  }
 
-  handleDecimal = () => {
+  handleDecimal() {
     if (this.state.evaluated === true) {
       this.setState({
         currentVal: "0.",
@@ -148,19 +164,25 @@ class App extends React.Component {
         });
       }
     }
-  };
+  }
+
+  initialize() {
+    this.setState({
+      currentVal: "0",
+      prevVal: "0",
+      formula: "",
+      currentSign: "pos",
+      lastClicked: "",
+      evaluated: false,
+    });
+  }
 
   render() {
     return (
-      <div id="calculatorWrap">
-        <div id="calculator">
-          <div className="formulaScreen">
-            {this.state.formula.replace(/x/g, "⋅")}{" "}
-          </div>
-          <div className="outputScreen" id="display">
-            {this.state.currentVal}
-          </div>
-
+      <div>
+        <div className="calculator">
+          <Formula formula={this.state.formula.replace(/x/g, "⋅")} />
+          <Output currentValue={this.state.currentVal} />
           <Buttons
             decimal={this.handleDecimal}
             evaluate={this.handleEvaluate}
@@ -168,6 +190,13 @@ class App extends React.Component {
             numbers={this.handleNumbers}
             operators={this.handleOperators}
           />
+        </div>
+        <div className="author">
+          {" "}
+          Designed and Coded By <br />
+          <a href="https://goo.gl/6NNLMG" target="_blank">
+            Peter Weinberg
+          </a>
         </div>
       </div>
     );
@@ -182,14 +211,25 @@ class Buttons extends React.Component {
           className="jumbo"
           id="clear"
           onClick={this.props.initialize}
+          style={clearStyle}
           value="AC"
         >
           AC
         </button>
-        <button id="divide" onClick={this.props.operators} value="/">
+        <button
+          id="divide"
+          onClick={this.props.operators}
+          style={operatorStyle}
+          value="/"
+        >
           /
         </button>
-        <button id="multiply" onClick={this.props.operators} value="x">
+        <button
+          id="multiply"
+          onClick={this.props.operators}
+          style={operatorStyle}
+          value="x"
+        >
           x
         </button>
         <button id="seven" onClick={this.props.numbers} value="7">
@@ -201,8 +241,13 @@ class Buttons extends React.Component {
         <button id="nine" onClick={this.props.numbers} value="9">
           9
         </button>
-        <button id="subtract" onClick={this.props.operators} value="‑">
-          -
+        <button
+          id="subtract"
+          onClick={this.props.operators}
+          style={operatorStyle}
+          value="‑"
+        >
+          ‑
         </button>
         <button id="four" onClick={this.props.numbers} value="4">
           4
@@ -213,7 +258,12 @@ class Buttons extends React.Component {
         <button id="six" onClick={this.props.numbers} value="6">
           6
         </button>
-        <button id="add" onClick={this.props.operators} value="+">
+        <button
+          id="add"
+          onClick={this.props.operators}
+          style={operatorStyle}
+          value="+"
+        >
           +
         </button>
         <button id="one" onClick={this.props.numbers} value="1">
@@ -244,4 +294,20 @@ class Buttons extends React.Component {
   }
 }
 
-export default App;
+class Output extends React.Component {
+  render() {
+    return (
+      <div className="outputScreen" id="display">
+        {this.props.currentValue}
+      </div>
+    );
+  }
+}
+
+class Formula extends React.Component {
+  render() {
+    return <div className="formulaScreen">{this.props.formula}</div>;
+  }
+}
+
+ReactDOM.render(<Calculator />, document.getElementById("app"));
